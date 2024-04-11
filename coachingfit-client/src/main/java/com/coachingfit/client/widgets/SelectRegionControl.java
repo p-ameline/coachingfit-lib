@@ -31,8 +31,21 @@ public class SelectRegionControl extends ListBox implements ControlModel
 	private List<RegionData>      _aRegions ;
 	
 	/**
+	 * Void Constructor
+	 */
+	public SelectRegionControl()
+	{
+		super() ;
+
+		_base     = null ;
+		_aRegions = null ;
+		_region   = null ;
+
+		setVisibleItemCount(1) ;
+	}
+	
+	/**
 	 * Default Constructor
-	 *
 	 */
 	public SelectRegionControl(final List<RegionData> aRegions, final RegionData region, final String sPath)
 	{
@@ -52,6 +65,18 @@ public class SelectRegionControl extends ListBox implements ControlModel
 		return true ;
 	}
 
+	public void setParameters(final List<RegionData> aRegions, final RegionData region, final String sPath)
+	{
+		_base     = new ControlBaseWithParams(sPath) ;
+		_aRegions = aRegions ;
+		_region   = region ;
+
+		init() ;
+
+		setVisibleItemCount(1) ;
+		setItemSelected(0, true) ;
+	}
+	
 	/**
 	 * Initialize the list with trainees - the first being "undefined" 
 	 *
@@ -60,11 +85,8 @@ public class SelectRegionControl extends ListBox implements ControlModel
 	{
 		addItem(constants.Undefined()) ;
 		
-		_aRegions.clear() ;
-		
-		if ((null != _aRegions) && (false == _aRegions.isEmpty()))
-			for (RegionData region : _aRegions)
-				_aRegions.add(new RegionData(region)) ;
+		if (null == _aRegions)
+			return ;
 		
 		if (null != _region)
 			_aRegions.add(new RegionData(_region)) ;
@@ -182,7 +204,12 @@ public class SelectRegionControl extends ListBox implements ControlModel
 			return ;
 		}
 
-		RegionData region = getRegionFromId(Integer.parseInt(sRegionId)) ;
+		setSelectedRegion(Integer.parseInt(sRegionId)) ;
+	}
+
+	public void setSelectedRegion(int iRegionId)
+	{
+		RegionData region = getRegionFromId(iRegionId) ;
 		if (null == region)
 			return ;
 
@@ -198,7 +225,7 @@ public class SelectRegionControl extends ListBox implements ControlModel
 				return ;
 			}
 	}
-
+	
 	public void resetContent() {
 		setItemSelected(0, true) ;
 	}

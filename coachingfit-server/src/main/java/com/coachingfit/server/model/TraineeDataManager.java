@@ -449,6 +449,58 @@ public class TraineeDataManager
 	}
 
 	/**
+	 * Get the list of existing jobs
+	 * 
+	 * @return The list of jobs if everything went well, <code>null</code> if not
+	 */
+	public List<String> getJobsList()
+	{
+		String sFctName = _sClassName + ".getJobsList" ;
+		
+		if (null == _dbConnector)
+		{
+			Logger.trace(sFctName + ": bad parameter", _iUserId, Logger.TraceLevel.ERROR) ;
+			return null ;
+		}
+
+		String sQuery = "SELECT UNIQUE jobType FROM trainee" ;
+
+		_dbConnector.prepareStatememt(sQuery, Statement.NO_GENERATED_KEYS) ;
+
+		if (false == _dbConnector.executePreparedStatement())
+		{
+			Logger.trace(sFctName + ": failed query " + sQuery, _iUserId, Logger.TraceLevel.ERROR) ;
+			_dbConnector.closePreparedStatement() ;
+			return null ;
+		}
+
+		List<String> aJobs = new ArrayList<>() ;
+		
+		ResultSet rs = _dbConnector.getResultSet() ;
+		if (null == rs)
+		{
+			Logger.trace(sFctName + ": no TraineeData found", _iUserId, Logger.TraceLevel.WARNING) ;
+			_dbConnector.closePreparedStatement() ;
+			return aJobs ;
+		}
+
+		try
+		{
+			while (rs.next())
+				aJobs.add(rs.getString("jobType")) ;
+		} 
+		catch (SQLException e)
+		{
+			Logger.trace(sFctName + ": exception when iterating results " + e.getMessage(), _iUserId, Logger.TraceLevel.ERROR) ;
+		}
+
+		_dbConnector.closeResultSet() ;
+		_dbConnector.closePreparedStatement() ;
+		
+		return aJobs ;
+	}
+	
+	/**
 	 * Initialize a TraineeData from a query ResultSet 
 	 * 
 	 * @param rs        ResultSet of a query

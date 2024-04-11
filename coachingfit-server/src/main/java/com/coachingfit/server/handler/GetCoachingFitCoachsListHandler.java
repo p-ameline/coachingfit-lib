@@ -1,5 +1,6 @@
 package com.coachingfit.server.handler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -44,9 +45,9 @@ public class GetCoachingFitCoachsListHandler extends GetFormsHandlerBase impleme
 		int iUserId              = action.getUserId() ;
 		List<Integer> aCoachsIds = action.getCoachsIds() ;
 
-		Logger.trace("GetCoachingFitCoachsListHandler: looking for " + aCoachsIds.size() + " coach(s)", iUserId, Logger.TraceLevel.STEP) ;
+		Logger.trace("GetCoachingFitCoachsListHandler: looking for " + aCoachsIds.size() + " coach(es)", iUserId, Logger.TraceLevel.STEP) ;
 		
-		if ((null == aCoachsIds) || aCoachsIds.isEmpty())
+		if (((null == aCoachsIds) || aCoachsIds.isEmpty()) && (false == action.getAllActive()))
 			return new GetCoachingFitCoachsListResult("server error: empty query", null) ;
 		
 		DBConnector dbConnector = new DBConnector(false) ;
@@ -54,15 +55,32 @@ public class GetCoachingFitCoachsListHandler extends GetFormsHandlerBase impleme
 		
 		GetCoachingFitCoachsListResult result = new GetCoachingFitCoachsListResult() ;
 		
-		for (Integer iCoachId : aCoachsIds)
+		// Get users from a list of identifiers
+		//
+		if ((null != aCoachsIds) && (false == aCoachsIds.isEmpty()))
 		{
-			UserData coachData = new UserData() ;
+			for (Integer iCoachId : aCoachsIds)
+			{
+				UserData coachData = new UserData() ;
 		
-			if (userManager.existUser(iCoachId, coachData))
-				result.addCoachData(coachData) ;
-		}
+				if (userManager.existUser(iCoachId, coachData))
+					result.addCoachData(coachData) ;
+			}
 				
-		return result ;		
+			return result ;
+		}
+		
+		// Get all active users
+		//
+		List<UserData> allUsers = new ArrayList<>() ;
+		if (false == userManager.getThemAll(allUsers))
+			return new GetCoachingFitCoachsListResult("server error", null) ;
+		
+		for (UserData user : allUsers)
+			if (false == user.getPassword().isEmpty())
+				result.addCoachData(user) ;
+		
+		return result ;
 	}
 			
 	@Override

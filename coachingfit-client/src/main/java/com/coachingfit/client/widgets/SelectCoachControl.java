@@ -77,6 +77,18 @@ public class SelectCoachControl extends ListBox implements ControlModel
 		}
 	}
 	
+	public SelectCoachControl()
+	{
+		super() ;
+
+		_base              = null ;
+		_aCoachs           = null ;
+		_aCoachingTrainees = null ;
+		_user              = null ;
+
+		setVisibleItemCount(1) ;
+	}
+	
 	/**
 	 * Default Constructor
 	 *
@@ -85,6 +97,15 @@ public class SelectCoachControl extends ListBox implements ControlModel
 	{
 		super() ;
 
+		setParameters(aCoachs, aCoachingTrainees, user, sPath) ;
+	}
+
+	public boolean isSingleData() {
+		return true ;
+	}
+
+	public void setParameters(final List<UserData> aCoachs, final List<TraineeData> aCoachingTrainees, final UserData user, final String sPath)
+	{
 		_base              = new ControlBaseWithParams(sPath) ;
 		_aCoachs           = aCoachs ;
 		_aCoachingTrainees = aCoachingTrainees ;
@@ -95,11 +116,7 @@ public class SelectCoachControl extends ListBox implements ControlModel
 		setVisibleItemCount(1) ;
 		setItemSelected(0, true) ;
 	}
-
-	public boolean isSingleData() {
-		return true ;
-	}
-
+	
 	/**
 	 * Initialize the list with trainees - the first being "undefined" 
 	 *
@@ -107,6 +124,9 @@ public class SelectCoachControl extends ListBox implements ControlModel
 	public void init()
 	{
 		addItem(constants.Undefined()) ;
+
+		if (null == _aPersons)
+			return ;
 		
 		_aPersons.clear() ;
 		
@@ -172,6 +192,27 @@ public class SelectCoachControl extends ListBox implements ControlModel
 			return selectedPerson.getID() ;
 			
 		return -1 ; 
+	}
+
+	public void setSelectedCoach(int iCoachId)
+	{
+		UserData coach = getCoachFromId(iCoachId) ;
+		
+		if (null == coach)
+			return ;
+		
+		int iIndex = 1 ;
+		
+		for (Person person : _aPersons)
+		{
+			if ((Person.PersonType.coach == person.getPersonType()) && (person.getID() == iCoachId))
+			{
+				setItemSelected(iIndex, true) ;
+				break ;
+			}
+			
+			iIndex++ ;
+		}
 	}
 	
 	/**

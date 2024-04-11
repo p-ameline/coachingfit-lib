@@ -7,8 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.coachingfit.server.model.TraineeDataManager;
 import com.coachingfit.shared.database.TraineeData;
-import com.coachingfit.shared.rpc.GetCoachingFitTraineesListAction;
-import com.coachingfit.shared.rpc.GetCoachingFitTraineesListResult;
+import com.coachingfit.shared.rpc.RecordTraineeAction;
+import com.coachingfit.shared.rpc.RecordTraineeResult;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -26,13 +26,13 @@ import net.customware.gwt.dispatch.shared.ActionException;
  * 
  * @author Philippe
  */
-public class GetCoachingFitTraineesListHandler extends GetFormsHandlerBase implements ActionHandler<GetCoachingFitTraineesListAction, GetCoachingFitTraineesListResult> 
+public class RecordTraineeHandler extends GetFormsHandlerBase implements ActionHandler<RecordTraineeAction, RecordTraineeResult> 
 {	
 	protected final Provider<ServletContext>     _servletContext ;
 	protected final Provider<HttpServletRequest> _servletRequest ;
 	
 	@Inject
-	public GetCoachingFitTraineesListHandler(final Provider<ServletContext>     servletContext,
+	public RecordTraineeHandler(final Provider<ServletContext>     servletContext,
 			                                     final Provider<HttpServletRequest> servletRequest)
 	{
 		super() ;
@@ -42,26 +42,41 @@ public class GetCoachingFitTraineesListHandler extends GetFormsHandlerBase imple
 	}
 
 	@Override
-	public GetCoachingFitTraineesListResult execute(GetCoachingFitTraineesListAction action, ExecutionContext context) throws ActionException 
+	public RecordTraineeResult execute(RecordTraineeAction action, ExecutionContext context) throws ActionException 
 	{
 		// String sFctName = "GetCoachingFitTraineeInformationHandler.execute" ;
 		
-		int iUserId                = action.getUserId() ;
-		List<Integer> aTraineesIds = action.getTraineesIds() ;
+		int         iUserId = action.getUserId() ;
+		TraineeData trainee = action.getTrainee() ;
 
-		Logger.trace("GetCoachingFitTraineesListHandler: looking for " + aTraineesIds.size() + " trainee(s)", iUserId, Logger.TraceLevel.STEP) ;
+		if (null == trainee)
+			return new RecordTraineeResult("server error: empty query", null) ;
 		
-		if ((null == aTraineesIds) || aTraineesIds.isEmpty())
-			return new GetCoachingFitTraineesListResult("server error: empty query", null) ;
+		DBConnector dbConnector = new DBConnector(false) ;
+		TraineeDataManager traineesManager = new TraineeDataManager(iUserId, dbConnector) ;
 		
-		GetCoachingFitTraineesListResult result = new GetCoachingFitTraineesListResult() ;
+		int iTraineeId = trainee.getId() ;
 		
-		if (getTraineesFromList(aTraineesIds, result.getTraineesData(), iUserId))
-			return result ;
+		if (iTraineeId > 0)
+		{
+			Logger.trace("RecordTraineeHandler: updating trainee " + iTraineeId, iUserId, Logger.TraceLevel.STEP) ;
+			if (false == traineesManager.updateData(trainee))
+			{
+				Logger.trace("RecordTraineeHandler: updating trainee " + iTraineeId + " failed.", iUserId, Logger.TraceLevel.ERROR) ;
+				return new RecordTraineeResult("server error: update failed", null) ;
+			}
+		}
+		else
+		{
+			Logger.trace("RecordTraineeHandler: creating trainee `" + trainee.getLabel() + "`.", iUserId, Logger.TraceLevel.STEP) ;
+			if (false == traineesManager.insertData(trainee))
+			{
+				Logger.trace("RecordTraineeHandler: creating trainee `" + trainee.getLabel() + "` failed.", iUserId, Logger.TraceLevel.ERROR) ;
+				return new RecordTraineeResult("server error: creation failed", null) ;
+			}
+		}
 		
-		result.setMessage("server error when getting trainees") ;
-		
-		return result ;
+		return new RecordTraineeResult("", trainee) ;
 	}
 	
 	/**
@@ -95,12 +110,12 @@ public class GetCoachingFitTraineesListHandler extends GetFormsHandlerBase imple
 	}
 	
 	@Override
-	public Class<GetCoachingFitTraineesListAction> getActionType() {
-		return GetCoachingFitTraineesListAction.class;
+	public Class<RecordTraineeAction> getActionType() {
+		return RecordTraineeAction.class;
 	}
 
 	@Override
-	public void rollback(GetCoachingFitTraineesListAction action, GetCoachingFitTraineesListResult result,
+	public void rollback(RecordTraineeAction action, RecordTraineeResult result,
 			ExecutionContext context) throws ActionException {
 		// TODO Auto-generated method stub
 	}

@@ -13,9 +13,18 @@ import java.util.logging.Logger;
 import com.coachingfit.client.event.TraineesListEvent;
 import com.coachingfit.client.event.TraineesListEventHandler;
 import com.coachingfit.client.global.CoachingFitSupervisor;
+import com.coachingfit.shared.database.RegionData;
 import com.coachingfit.shared.database.TraineeData;
+import com.coachingfit.shared.rpc.GetCoachingFitCoachsListAction;
+import com.coachingfit.shared.rpc.GetCoachingFitCoachsListResult;
+import com.coachingfit.shared.rpc.GetCoachingFitJobsListAction;
+import com.coachingfit.shared.rpc.GetCoachingFitJobsListResult;
+import com.coachingfit.shared.rpc.GetCoachingFitRegionsListAction;
+import com.coachingfit.shared.rpc.GetCoachingFitRegionsListResult;
 import com.coachingfit.shared.rpc.GetTraineesListAction;
 import com.coachingfit.shared.rpc.GetTraineesListResult;
+import com.coachingfit.shared.rpc.RecordTraineeAction;
+import com.coachingfit.shared.rpc.RecordTraineeResult;
 import com.coachingfit.shared.rpc_util.TraineesSearchTrait;
 
 import com.google.gwt.event.dom.client.ClickEvent ;
@@ -24,6 +33,8 @@ import com.google.gwt.event.dom.client.HasClickHandlers ;
 import com.google.gwt.user.client.rpc.AsyncCallback ;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.inject.Inject ;
+
+import com.primege.shared.database.UserData;
 
 /**
  * Presenter part of the Patient list
@@ -34,21 +45,28 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
     private int                         _iSortedColumn ; 
     /** Naturally sorted means clicked once (or an odd number of times) */
     private boolean                     _bNaturallySorted ;
-    
-    private List<TraineeData>           _aTrainees = new ArrayList<TraineeData>() ;
-    
+
+    private List<TraineeData>           _aTrainees = new ArrayList<>() ;
+    private List<UserData>              _aCoachs   = new ArrayList<>() ;
+    private List<RegionData>            _aRegions  = new ArrayList<>() ;
+
     private final DispatchAsync         _dispatcher ;
-	private final CoachingFitSupervisor _supervisor ;
-	private       Logger                _logger = Logger.getLogger("") ;
-    
+    private final CoachingFitSupervisor _supervisor ;
+    private       Logger                _logger = Logger.getLogger("") ;
+
     public interface Display extends WidgetDisplay
     {
         HasClickHandlers    getSearchButton() ;
+        HasClickHandlers    getNewButton() ;
         HasClickHandlers    getFlexTable() ;
         HasClickHandlers    getFlexTableClick() ;
 
+        HasClickHandlers    getUnactiveButton() ;
+        HasClickHandlers    getSaveButton() ;
+        HasClickHandlers    getCancelButton() ;
+
         TraineesSearchTrait getTraits() ;
-        
+
         int                 getClickedColumnHeader(ClickEvent event) ;
         int                 getClickedRow(ClickEvent event) ;
 
@@ -56,20 +74,42 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
 
         void                resetList() ;
         void                reloadTrainees(List<TraineeData> aTrainees) ;
+        void                reloadCoaches(List<UserData> aCoaches) ;
+        void                reloadRegions(List<RegionData> aRegions) ;
+        void                reloadJobs(List<String> aJobs) ;
+
+        void                showEditionPanel() ;
+        void                hideEditionPanel() ;
+
+        void                setLastName(final String sLastName) ;
+        void                setFirstName(final String sFirstName) ;
+        void                setJob(final String sJob) ;
+        void                setMail(final String sMail) ;
+        void                setCoach(final int iCoachId) ;
+        void                setRegion(final int iRegionId) ;
+
+        String              getLastName() ;
+        String              getFirstName() ;
+        String              getJob() ;
+        String              getMail() ;
+        int                 getCoach() ;
+        int                 getRegion() ;
     }
 
     @Inject
     public CoachingFitTraineesListPresenter(final Display display, final EventBus eventBus, final DispatchAsync dispatcher, final CoachingFitSupervisor supervisor)
     {
         super(display, eventBus) ;
-        
+
         _dispatcher          = dispatcher ;
-		_supervisor          = supervisor ;
+        _supervisor          = supervisor ;
 
         _iSortedColumn       = -1 ;
         _bNaturallySorted    = true ;
 
         bind() ;
+
+        getInformation() ;
     }
 
     @Override
@@ -121,7 +161,31 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
                     TraineeData trainee = getTraineeAtRow(iClickedRow) ;
                     if (null == trainee)
                         return ;
+
+                    editTrainee(trainee) ;
                 }
+            }
+        }) ;
+
+        // Click to create a new trainee
+        //
+        display.getNewButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                createNew() ;
+            }
+        }) ;
+
+        // Click to save changes
+        //
+        display.getSaveButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                saveChanges() ;
             }
         }) ;
 
@@ -132,6 +196,138 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
 
     protected void initDisplay() {
         display.resetList() ;
+    }
+
+    /**
+     * Edit/create a trainee
+     * 
+     * @param trainee trainee information to edit
+     */
+    private void editTrainee(TraineeData trainee)
+    {
+        display.showEditionPanel() ;
+
+        if (null == trainee)
+            resetEditionControls() ;
+        else
+            setEditionControls(trainee);
+    }
+
+    /**
+     * Set all information in the edition panel to their void values
+     */
+    private void resetEditionControls()
+    {
+        display.setLastName("") ;
+        display.setFirstName("") ;
+        display.setJob("") ;
+        display.setMail("") ;
+        display.setCoach(0) ;
+        display.setRegion(0) ;
+    }
+
+    /**
+     * Set all information in the edition panel to a trainee's values
+     */
+    private void setEditionControls(TraineeData trainee)
+    {
+        if (null == trainee)
+        {
+            resetEditionControls() ;
+            return ;
+        }
+
+        display.setLastName(trainee.getLastName()) ;
+        display.setFirstName(trainee.getFirstName()) ;
+        display.setJob(trainee.getJobType()) ;
+        display.setMail(trainee.getEMail()) ;
+        display.setCoach(trainee.getCoachId()) ;
+        display.setRegion(trainee.getRegionId()) ;
+    }
+
+    /**
+     * Create a new trainee
+     */
+    private void createNew()
+    {
+        resetEditionControls() ;
+
+        display.showEditionPanel() ;
+    }
+
+    /**
+     * Click to record changes on server
+     */
+    private void saveChanges()
+    {
+        TraineeData trainee = new TraineeData() ;
+
+        fillTraineeFromForm(trainee) ;
+
+        if (false == trainee.isValid())
+            return ;
+
+        // Ask the server for corresponding information
+        //
+        _dispatcher.execute(new RecordTraineeAction(_supervisor.getUserId(), trainee), new recordTraineeCallback()) ;
+    }
+
+    /**
+     * Callback function called when the server returns information from files processing
+     */
+    public class recordTraineeCallback implements AsyncCallback<RecordTraineeResult>
+    {
+        public recordTraineeCallback() {
+            super() ;
+        }
+
+        @Override
+        public void onFailure(Throwable cause)
+        {
+            _logger.log(Level.SEVERE, "Unhandled error", cause) ;
+            _logger.info("error from recordTraineeCallback!!") ;
+        }
+
+        @Override
+        public void onSuccess(RecordTraineeResult value)
+        {
+            String sMessage = value.getMessage() ;
+            if (false == "".equals(sMessage))
+            {
+                _logger.info("Recording edited trainee information failed (" + sMessage + ").") ;
+                return ;
+            }
+
+            _logger.info("Trainees information have been recorded successfully") ;
+
+            resetEditionControls() ;
+
+            display.hideEditionPanel() ;
+            
+            reloadList() ;
+        }
+    }
+    
+    /**
+     * Fill a {@link TraineeData} from the entry form
+     * 
+     * @param trainee The {@link TraineeData} to fill
+     */
+    private void fillTraineeFromForm(TraineeData trainee)
+    {
+        if (null == trainee)
+            return ;
+
+        String sLastName  = display.getLastName() ;
+        String sFirstName = display.getFirstName() ;
+
+        trainee.setFirstName(sFirstName) ;
+        trainee.setLabel(sFirstName, sLastName) ;
+
+        trainee.setJobType(display.getJob()) ;
+        trainee.setEMail(display.getMail()) ;
+        trainee.setCoachId(display.getCoach()) ;
+        trainee.setRegionId(display.getRegion()) ;
     }
 
     /**
@@ -147,7 +343,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         //
         _dispatcher.execute(new GetTraineesListAction(_supervisor.getUserId(), traits), new reloadListCallback()) ;
     }
-    
+
     /**
      * Refresh patients list from a new selection of traits
      */
@@ -161,7 +357,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         //
         _dispatcher.execute(new GetTraineesListAction(_supervisor.getUserId(), traits), new reloadListCallback()) ;
     }
-    
+
     /**
      * Callback function called when the server returns information from files processing
      */
@@ -189,7 +385,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
             }
 
             _logger.info("Server returned processed a new list of trainees.") ;
-            
+
             _aTrainees.clear() ;
             _aTrainees.addAll(value.getTrainees()) ;
 
@@ -246,14 +442,141 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
     {
         if ((null == _aTrainees) || _aTrainees.isEmpty())
             return null ;
-        
+
         for (TraineeData trainee : _aTrainees)
             if (trainee.getId() == iTraineeId)
                 return trainee ;
-        
+
         return null ;
     }
-    
+
+    /**
+     * Get all needed information (users, regions, etc)
+     */
+    private void getInformation()
+    {
+        loadCoaches() ;
+    }
+
+    private void loadCoaches() {
+        _dispatcher.execute(new GetCoachingFitCoachsListAction(_supervisor.getUserId(), true), new getCoachsCallback()) ;
+    }
+
+    /**
+     * Callback function called when the server returns the list of active coaches
+     */
+    public class getCoachsCallback implements AsyncCallback<GetCoachingFitCoachsListResult>
+    {
+        public getCoachsCallback() {
+            super() ;
+        }
+
+        @Override
+        public void onFailure(Throwable cause)
+        {
+            _logger.log(Level.SEVERE, "Unhandled error", cause) ;
+            _logger.info("error when getting list of coaches!!") ;
+        }
+
+        @Override
+        public void onSuccess(GetCoachingFitCoachsListResult value)
+        {
+            String sMessage = value.getMessage() ;
+            if (false == "".equals(sMessage))
+            {
+                _logger.info("Fetching the list of coaches failed (" + sMessage + ").") ;
+                return ;
+            }
+
+            _logger.info("Server returned the list of coaches.") ;
+
+            _aCoachs.clear() ;
+            _aCoachs.addAll(value.getCoachsData()) ;
+
+            display.reloadCoaches(_aCoachs) ;
+
+            loadRegions() ;
+        }
+    }
+
+    private void loadRegions() {
+        _dispatcher.execute(new GetCoachingFitRegionsListAction(_supervisor.getUserId(), true), new getRegionsCallback()) ;
+    }
+
+    /**
+     * Callback function called when the server returns the list of active coaches
+     */
+    public class getRegionsCallback implements AsyncCallback<GetCoachingFitRegionsListResult>
+    {
+        public getRegionsCallback() {
+            super() ;
+        }
+
+        @Override
+        public void onFailure(Throwable cause)
+        {
+            _logger.log(Level.SEVERE, "Unhandled error", cause) ;
+            _logger.info("error when getting list of regions!!") ;
+        }
+
+        @Override
+        public void onSuccess(GetCoachingFitRegionsListResult value)
+        {
+            String sMessage = value.getMessage() ;
+            if (false == "".equals(sMessage))
+            {
+                _logger.info("Fetching the list of coaches failed (" + sMessage + ").") ;
+                return ;
+            }
+
+            _logger.info("Server returned the list of coaches.") ;
+
+            _aRegions.clear() ;
+            _aRegions.addAll(value.getRegionsData()) ;
+
+            display.reloadRegions(_aRegions) ;
+
+            loadJobs() ;
+        }
+    }
+
+    private void loadJobs() {
+        _dispatcher.execute(new GetCoachingFitJobsListAction(_supervisor.getUserId()), new getJobsCallback()) ;
+    }
+
+    /**
+     * Callback function called when the server returns the list of active coaches
+     */
+    public class getJobsCallback implements AsyncCallback<GetCoachingFitJobsListResult>
+    {
+        public getJobsCallback() {
+            super() ;
+        }
+
+        @Override
+        public void onFailure(Throwable cause)
+        {
+            _logger.log(Level.SEVERE, "Unhandled error", cause) ;
+            _logger.info("error when getting list of jobs!!") ;
+        }
+
+        @Override
+        public void onSuccess(GetCoachingFitJobsListResult value)
+        {
+            String sMessage = value.getMessage() ;
+            if (false == "".equals(sMessage))
+            {
+                _logger.info("Fetching the list of jobs failed (" + sMessage + ").") ;
+                return ;
+            }
+
+            _logger.info("Server returned the list of jobs.") ;
+
+            display.reloadJobs(value.getJobs()) ;
+        }
+    }
+
+
     @Override
     protected void onUnbind()
     {

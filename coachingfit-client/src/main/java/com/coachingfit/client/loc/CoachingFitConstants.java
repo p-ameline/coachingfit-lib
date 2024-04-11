@@ -43,6 +43,11 @@ public interface CoachingFitConstants extends Constants
 	String scoreVscDangerContext() ;
 	String scoreVscNotObserved() ;
 
+	String editButtonUnactive() ;
+	String editButtonSave() ;
+	String editButtonNew() ;
+	String editButtonCancel() ;
+	
 	String incorrectVersionNumber() ;
 
 	String warningAlreadyExist() ;

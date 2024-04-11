@@ -6,22 +6,19 @@ import java.util.List;
 import net.customware.gwt.dispatch.shared.Action;
 
 /**
- * Object to query information about a list of trainee<br>
- * <br>
- * Created: 2 November 2019<br>
+ * Object to query information about a list of regions<br>
  * Author: PA<br>
- * 
  */
-public class GetCoachingFitCoachsListAction implements Action<GetCoachingFitCoachsListResult> 
+public class GetCoachingFitRegionsListAction implements Action<GetCoachingFitRegionsListResult> 
 {	
 	private int           _iUserId ;
-	private List<Integer> _aCoachsIds = new ArrayList<Integer>() ;
+	private List<Integer> _aRegionsIds = new ArrayList<>() ;
 	private boolean       _bAllActives ;
 	
 	/**
 	 * Default constructor (with zero information)
 	 */
-	public GetCoachingFitCoachsListAction() 
+	public GetCoachingFitRegionsListAction() 
 	{
 		super() ;
 		reset() ;
@@ -30,7 +27,7 @@ public class GetCoachingFitCoachsListAction implements Action<GetCoachingFitCoac
 	/**
 	 * Plain vanilla constructor 
 	 */
-	public GetCoachingFitCoachsListAction(final int iUserId, final List<Integer> aCoachsIds) 
+	public GetCoachingFitRegionsListAction(final int iUserId, final List<Integer> aCoachsIds) 
 	{
 		super() ;
 		
@@ -42,7 +39,7 @@ public class GetCoachingFitCoachsListAction implements Action<GetCoachingFitCoac
 	/**
 	 * Constructor to query all active users 
 	 */
-	public GetCoachingFitCoachsListAction(final int iUserId, final boolean bActive) 
+	public GetCoachingFitRegionsListAction(final int iUserId, final boolean bActive) 
 	{
 		super() ;
 		
@@ -56,7 +53,7 @@ public class GetCoachingFitCoachsListAction implements Action<GetCoachingFitCoac
 	public void reset()
 	{
 		_iUserId    = -1 ;
-		_aCoachsIds.clear() ;
+		_aRegionsIds.clear() ;
 		_bAllActives = false ;
 	}
 	
@@ -67,19 +64,19 @@ public class GetCoachingFitCoachsListAction implements Action<GetCoachingFitCoac
 		_iUserId = iUserId ;
 	}
 
-	public List<Integer> getCoachsIds() {
-		return _aCoachsIds ;
+	public List<Integer> getRegionsIds() {
+		return _aRegionsIds ;
 	}
 	public void setCoachsIds(final List<Integer> aCoachsIds)
 	{
-		_aCoachsIds.clear() ;
+		_aRegionsIds.clear() ;
 		
 		if ((null == aCoachsIds) || aCoachsIds.isEmpty())
 			return ;
 		
 		for (Integer coachId : aCoachsIds)
-			if (false == _aCoachsIds.contains(coachId))
-				_aCoachsIds.add(coachId) ;
+			if (false == _aRegionsIds.contains(coachId))
+				_aRegionsIds.add(coachId) ;
 	}
 	
 	public boolean getAllActive() {
