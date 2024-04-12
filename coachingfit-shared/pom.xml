@@ -29,7 +29,7 @@
             <groupId>com.primege</groupId>
             <artifactId>primege-shared</artifactId>
         </dependency>
-
+        
     </dependencies>
 
     <build>

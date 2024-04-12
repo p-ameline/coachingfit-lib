@@ -4,58 +4,63 @@ import com.google.gwt.i18n.client.Constants;
 
 public interface CoachingFitConstants extends Constants
 {
-	String Undefined() ;
-	String More();
-	String Less() ;
+    String Undefined() ;
+    String More();
+    String Less() ;
 
-	String formsCoach() ;
-	String formsTrainees() ;
-	String formsAuthor() ;
+    String formsCoach() ;
+    String formsTrainees() ;
+    String formsAuthor() ;
 
-	String generalYear() ;
-	String generalYears() ;
-	String generalMonth() ;
-	String generalMonths() ;
+    String generalYear() ;
+    String generalYears() ;
+    String generalMonth() ;
+    String generalMonths() ;
 
-	String traineesListTitle() ;
+    String traineesListTitle() ;
 
-	String generalFirstName() ;
-	String generalLastName() ;
-	String generalCoach() ;
-	String generalRegion() ;
-	String generalMail() ;
-	String generalJob() ;
-	String generalSearch() ;
-	String generalStartDate() ;
+    String generalFirstName() ;
+    String generalLastName() ;
+    String generalCoach() ;
+    String generalRegion() ;
+    String generalMail() ;
+    String generalJob() ;
+    String generalSearch() ;
+    String generalStartDate() ;
+    String generalInactivationDate() ;
+    String generalActive() ;
+    String generalInactive() ;
+    String generalNotSet() ;
+    String generalFill() ;
 
-	String generalLogin() ;
-	String generalPassword() ;
+    String generalLogin() ;
+    String generalPassword() ;
 
-	String scoreFit() ;
-	String scoreSemiFit() ;
-	String scoreUnfit() ;
-	String scoreSetFit() ;
-	String scoreSetSemiFit() ;
-	String scoreSetUnfit() ;
-	String scoreSetApprentice() ;
-	String scoreNotEvaluable() ;
+    String scoreFit() ;
+    String scoreSemiFit() ;
+    String scoreUnfit() ;
+    String scoreSetFit() ;
+    String scoreSetSemiFit() ;
+    String scoreSetUnfit() ;
+    String scoreSetApprentice() ;
+    String scoreNotEvaluable() ;
 
-	String scoreVscGood() ;
-	String scoreVscDangerAct() ;
-	String scoreVscDangerContext() ;
-	String scoreVscNotObserved() ;
+    String scoreVscGood() ;
+    String scoreVscDangerAct() ;
+    String scoreVscDangerContext() ;
+    String scoreVscNotObserved() ;
 
-	String editButtonUnactive() ;
-	String editButtonSave() ;
-	String editButtonNew() ;
-	String editButtonCancel() ;
-	
-	String incorrectVersionNumber() ;
+    String editButtonUnactive() ;
+    String editButtonSave() ;
+    String editButtonNew() ;
+    String editButtonCancel() ;
 
-	String warningAlreadyExist() ;
-	String mandatoryEnterAll() ;
+    String incorrectVersionNumber() ;
 
-	String formMail() ;
+    String warningAlreadyExist() ;
+    String mandatoryEnterAll() ;
 
-	String couldNotSendReportByMail() ;
+    String formMail() ;
+
+    String couldNotSendReportByMail() ;
 }

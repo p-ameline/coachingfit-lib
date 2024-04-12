@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import com.coachingfit.client.event.TraineesListEvent;
 import com.coachingfit.client.event.TraineesListEventHandler;
 import com.coachingfit.client.global.CoachingFitSupervisor;
+import com.coachingfit.client.utilities.LocalFunctions;
 import com.coachingfit.shared.database.RegionData;
 import com.coachingfit.shared.database.TraineeData;
 import com.coachingfit.shared.rpc.GetCoachingFitCoachsListAction;
@@ -26,7 +27,7 @@ import com.coachingfit.shared.rpc.GetTraineesListResult;
 import com.coachingfit.shared.rpc.RecordTraineeAction;
 import com.coachingfit.shared.rpc.RecordTraineeResult;
 import com.coachingfit.shared.rpc_util.TraineesSearchTrait;
-
+import com.coachingfit.shared.util.CoachingFitFcts;
 import com.google.gwt.event.dom.client.ClickEvent ;
 import com.google.gwt.event.dom.client.ClickHandler ;
 import com.google.gwt.event.dom.client.HasClickHandlers ;
@@ -63,12 +64,16 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         HasClickHandlers    getNewButton() ;
         HasClickHandlers    getFlexTable() ;
         HasClickHandlers    getFlexTableClick() ;
+        
+        HasClickHandlers    getFillMailButton() ;
+        HasClickHandlers    getFillPasswordButton() ;
 
         HasClickHandlers    getUnactiveButton() ;
         HasClickHandlers    getSaveButton() ;
         HasClickHandlers    getCancelButton() ;
 
         TraineesSearchTrait getTraits() ;
+        void                setActiveTrait(boolean bValue) ;
 
         int                 getClickedColumnHeader(ClickEvent event) ;
         int                 getClickedRow(ClickEvent event) ;
@@ -229,13 +234,37 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
             }
         }) ;
         
+        // Click to fill email from name
+        //
+        display.getFillMailButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                fillMail() ;
+            }
+        }) ;
+        
+        // Click to fill password
+        //
+        display.getFillPasswordButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                fillPassword() ;
+            }
+        }) ;
+        
         // Initialize columns and search interface elements
         //
         initDisplay() ;
     }
 
-    protected void initDisplay() {
+    protected void initDisplay()
+    {
         display.resetList() ;
+        display.setActiveTrait(true) ;
     }
 
     /**
@@ -654,6 +683,28 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         }
     }
 
+    /**
+     * Fill the "e-mail" text box from first name and last name
+     */
+    private void fillMail()
+    {
+        String sLastName  = display.getLastName() ;
+        String sFirstName = display.getFirstName() ;
+        
+        if (sLastName.isEmpty() && sFirstName.isEmpty())
+            return ;
+        
+        String sMail = LocalFunctions.getMailFromName(sFirstName, sLastName, "savencia-plf.com") ;
+        
+        if (null != sMail)
+            display.setMail(sMail) ;
+    }
+    
+    private void fillPassword()
+    {
+        String sPassword = CoachingFitFcts.buildPassword(10) ;
+        display.setPassword(sPassword) ;
+    }
 
     @Override
     protected void onUnbind()

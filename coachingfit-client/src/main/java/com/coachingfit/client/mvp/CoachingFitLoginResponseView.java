@@ -144,7 +144,7 @@ public class CoachingFitLoginResponseView extends PrimegeBaseDisplay implements 
         //
         List<TraineeData> aSortedTrainees = CoachingFitSupervisor.getSortedTraineesArray(((CoachingFitUser) _supervisor.getUser()).getTrainees()) ;
 
-        _MgtTrainee = new SelectTraineeControl(aSortedTrainees, "", false, false) ;
+        _MgtTrainee = new SelectTraineeControl(aSortedTrainees, "", false, false, false) ;
 
         // Coaches
         //

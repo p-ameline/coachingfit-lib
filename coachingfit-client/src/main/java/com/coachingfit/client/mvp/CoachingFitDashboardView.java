@@ -16,7 +16,6 @@ import com.coachingfit.client.widgets.SelectZoneControl.ZoneData;
 import com.coachingfit.shared.database.TraineeData;
 import com.coachingfit.shared.model.CoachingFitUser;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,7 +31,6 @@ import com.googlecode.gwt.charts.client.options.HAxis;
 import com.googlecode.gwt.charts.client.options.SeriesType;
 import com.googlecode.gwt.charts.client.options.VAxis;
 
-import com.primege.client.loc.PrimegeViewConstants;
 import com.primege.client.mvp.DashboardViewModel;
 import com.primege.client.util.DashboardCol;
 import com.primege.client.util.FormControl;
@@ -47,14 +45,12 @@ import com.primege.shared.model.DashboardTableLine;
 
 public class CoachingFitDashboardView extends DashboardViewModel implements CoachingFitDashboardPresenter.Display
 {	
-    private final PrimegeViewConstants constants = GWT.create(PrimegeViewConstants.class) ;
-
     @Inject
     public CoachingFitDashboardView(final CoachingFitSupervisor supervisor)
     {
         super(supervisor) ;
 
-        CoachingFitUser user = supervisor.getCoachingFitUser() ;
+        // CoachingFitUser user = supervisor.getCoachingFitUser() ;
         // if (user.hasRole(0, "CV"))
         //	_submitButton.setVisible(false) ;
     }
@@ -192,7 +188,7 @@ public class CoachingFitDashboardView extends DashboardViewModel implements Coac
     {
         if ("trainee".equalsIgnoreCase(sControlType))
         {
-            SelectTraineeControl traineeControl = new SelectTraineeControl(new ArrayList<TraineeData>(), sControlPath, false, false) ;
+            SelectTraineeControl traineeControl = new SelectTraineeControl(new ArrayList<TraineeData>(), sControlPath, false, false, false) ;
             traineeControl.addStyleName("dashboardLocalPivotControl") ;
 
             _aLocalPivotCtr.add(new FormControl(traineeControl, null, sControlPath, "")) ;

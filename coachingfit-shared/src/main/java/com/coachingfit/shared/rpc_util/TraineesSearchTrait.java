@@ -13,22 +13,24 @@ public class TraineesSearchTrait implements Serializable
 {
     private static final long serialVersionUID = 5724164644834278901L;
 
-    private String _sFirstName ;
-    private String _sLastName ;
-    private int    _iRegionId ;
-    private int    _iCoachId ;
-    private String _sCategory ;
+    private String  _sFirstName ;
+    private String  _sLastName ;
+    private int     _iRegionId ;
+    private int     _iCoachId ;
+    private String  _sCategory ;
+    private boolean _bIsActive ;
 
     /**
      * Plain vanilla constructor 
      */
-    public TraineesSearchTrait(final String sFirstName, final String sLastName, int iRegionId, int iCoachId, final String sCategory)
+    public TraineesSearchTrait(final String sFirstName, final String sLastName, int iRegionId, int iCoachId, final String sCategory, final boolean bIsActive)
     {
-    	_sFirstName = "" ;
-        _sLastName  = "" ;
-        _iRegionId  = -1 ;
-        _iCoachId   = -1 ;
-        _sCategory  = "" ;
+    	_sFirstName = sFirstName ;
+        _sLastName  = sLastName ;
+        _iRegionId  = iRegionId ;
+        _iCoachId   = iCoachId ;
+        _sCategory  = sCategory ;
+        _bIsActive  = bIsActive ;
     }
 
     /**
@@ -45,6 +47,7 @@ public class TraineesSearchTrait implements Serializable
         _iRegionId  = -1 ;
         _iCoachId   = -1 ;
         _sCategory  = "" ;
+        _bIsActive  = false ;
     }
     
     public String getFirstName() {
@@ -82,13 +85,20 @@ public class TraineesSearchTrait implements Serializable
         _sCategory = (null == sCategory) ? "" : sCategory ;
     }
 
+    public boolean isToBeActive() {
+        return _bIsActive ;
+    }
+    public void setMustBeActive(final boolean bIsActive) {
+        _bIsActive = bIsActive ;
+    }
+    
     public boolean isEmpty() {
-    	return _sFirstName.isEmpty() && _sLastName.isEmpty() && (_iCoachId <= 0) && (_iRegionId <= 0) && _sCategory.isEmpty() ;
+    	return _sFirstName.isEmpty() && _sLastName.isEmpty() && (_iCoachId <= 0) && (_iRegionId <= 0) && _sCategory.isEmpty() && (false == _bIsActive) ;
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(_iCoachId, _iRegionId, _sCategory, _sFirstName, _sLastName) ;
+        return Objects.hash(_bIsActive, _iCoachId, _iRegionId, _sCategory, _sFirstName, _sLastName) ;
     }
     
     /**
@@ -108,6 +118,7 @@ public class TraineesSearchTrait implements Serializable
 
         return (_iRegionId == other._iRegionId) &&
                (_iCoachId  == other._iCoachId)  &&
+               (_bIsActive == other._bIsActive) &&
                _sFirstName.equals(other._sFirstName) &&
                _sLastName.equals(other._sLastName) &&
                _sCategory.equals(other._sCategory) ;

@@ -8,6 +8,7 @@ import java.util.List ;
 import com.coachingfit.client.global.CoachingFitSupervisor;
 import com.coachingfit.client.loc.CoachingFitConstants;
 import com.coachingfit.client.widgets.CoachingFitFlexTable;
+import com.coachingfit.client.widgets.SearchCheckboxPanel;
 import com.coachingfit.client.widgets.SearchEditPanel;
 import com.coachingfit.client.widgets.SelectCoachControl;
 import com.coachingfit.client.widgets.SelectRegionControl;
@@ -60,6 +61,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     private       FlowPanel             _TraitsPanel ;
     private final SearchEditPanel       _firstNameTrait ;
     private final SearchEditPanel       _lastNameTrait ;
+    private final SearchCheckboxPanel   _activeTrait ;
     private       Button                _searchButton ;
 
     // Edition elements
@@ -77,6 +79,9 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     private       Button                _unactiveButton ;
     private       Button                _saveButton ;
     private       Button                _newButton ;
+    
+    private       Button                _setMailButton ;
+    private       Button                _setPassButton ;
     
     private       Button                _backButton ;
     
@@ -98,6 +103,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                 {
                     _firstNameTrait = new SearchEditPanel("", constants.generalFirstName()) ;
                     _lastNameTrait  = new SearchEditPanel("", constants.generalLastName()) ;
+                    _activeTrait    = new SearchCheckboxPanel("", constants.generalActive()) ;
                     
                     // Search controls table
                     //
@@ -106,6 +112,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     queryControls.setWidget(0, 1, _firstNameTrait.getTextBox()) ;
                     queryControls.setWidget(0, 2, _lastNameTrait.getLabel()) ;
                     queryControls.setWidget(0, 3, _lastNameTrait.getTextBox()) ;
+                    queryControls.setWidget(0, 4, _activeTrait.getCheckBox()) ;
                     
                     _searchButton = new Button(constants.generalSearch()) ;
                     _searchButton.addStyleName("button green") ;
@@ -113,9 +120,9 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     _newButton    = new Button(constants.editButtonNew()) ;
                     _newButton.addStyleName("button white") ;
                     
-                    queryControls.setWidget(0, 4, _searchButton) ;
-                    queryControls.setWidget(0, 5, new HTML("&nbsp;")) ;
-                    queryControls.setWidget(0, 6, _newButton) ;
+                    queryControls.setWidget(0, 5, _searchButton) ;
+                    queryControls.setWidget(0, 6, new HTML("&nbsp;")) ;
+                    queryControls.setWidget(0, 7, _newButton) ;
                     
                     _TraitsPanel.add(queryControls) ;
                     
@@ -146,6 +153,9 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     _regionList   = new SelectRegionControl() ;
                     _passwordBox  = new TextBox() ;
                     
+                    _setMailButton = new Button(constants.generalFill()) ;
+                    _setPassButton = new Button(constants.generalFill()) ;
+                    
                     // Edition controls table
                     //
                     FlexTable editionControls = new FlexTable() ;
@@ -155,6 +165,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     editionControls.setWidget(1, 1, _nameBox) ;
                     editionControls.setWidget(2, 0, new Label(constants.generalMail())) ;
                     editionControls.setWidget(2, 1, _emailBox) ;
+                    editionControls.setWidget(2, 2, _setMailButton) ;
                     editionControls.setWidget(3, 0, new Label(constants.generalJob())) ;
                     editionControls.setWidget(3, 1, _jobsList) ;
                     editionControls.setWidget(4, 0, new Label(constants.generalCoach())) ;
@@ -163,6 +174,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     editionControls.setWidget(5, 1, _regionList) ;
                     editionControls.setWidget(6, 0, new Label(constants.generalPassword())) ;
                     editionControls.setWidget(6, 1, _passwordBox) ;
+                    editionControls.setWidget(6, 2, _setPassButton) ;
                     
                     _editionPanel.add(editionControls) ;
                     
@@ -217,14 +229,24 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
         _listTable.setWidget(0, _iTableColCount++, new HTML(constants.generalRegion())) ;
     }
 
+    /**
+     * Fill a {@link TraineesSearchTrait} from search traits controls
+     */
     @Override
     public TraineesSearchTrait getTraits()
     {
         TraineesSearchTrait searchTraits = new TraineesSearchTrait() ;
+        
         searchTraits.setFirstName(_firstNameTrait.getText()) ;
         searchTraits.setLastName(_lastNameTrait.getText()) ;
+        searchTraits.setMustBeActive(_activeTrait.getValue()) ;
         
         return searchTraits ;
+    }
+    
+    @Override
+    public void setActiveTrait(boolean bValue) {
+        _activeTrait.setValue(bValue) ;
     }
     
     @Override
@@ -358,7 +380,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
             fillCell(iRow, 1, trainee.getJobType()) ;
             
             if (trainee.getCoachId() == 0)
-            	fillCell(iRow, 2, "inactif") ;
+            	fillCell(iRow, 2, constants.generalInactive()) ;
             else
             {
             	UserData coach = getCoachFromId(trainee.getCoachId()) ;
@@ -369,7 +391,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
             }
             
             if (trainee.getRegionId() == 0)
-            	fillCell(iRow, 3, "non attribué") ;
+            	fillCell(iRow, 3, constants.generalNotSet()) ;
             else
             {
             	RegionData region = getRegionFromId(trainee.getRegionId()) ;
@@ -544,6 +566,16 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     @Override
     public HasClickHandlers getBackButton() {
         return _backButton ;
+    }
+
+    @Override
+    public HasClickHandlers getFillMailButton() {
+        return _setMailButton ;
+    }
+    
+    @Override
+    public HasClickHandlers getFillPasswordButton() {
+        return _setPassButton ;
     }
     
     /**

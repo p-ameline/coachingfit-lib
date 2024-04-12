@@ -25,13 +25,14 @@ public class SelectTraineeControl extends ListBox implements ControlModel
 
     private String                _sPreSelectedId ;   // In case of asynchronous initialization of trainees list
     
+    private boolean               _bMoreOrLess ;
     private boolean               _bWideOpen ;
 
     /**
      * Default Constructor
      *
      */
-    public SelectTraineeControl(List<TraineeData> aTrainees, final String sPath, boolean bAllowedMode, boolean bWideOpen)
+    public SelectTraineeControl(List<TraineeData> aTrainees, final String sPath, boolean bMoreOrLess, boolean bAllowedMode, boolean bWideOpen)
     {
         super() ;
 
@@ -40,6 +41,7 @@ public class SelectTraineeControl extends ListBox implements ControlModel
 
         _sPreSelectedId = "" ;
         _bWideOpen      = bWideOpen ;
+        _bMoreOrLess    = bMoreOrLess ;
 
         init(bAllowedMode) ;
         
@@ -75,10 +77,13 @@ public class SelectTraineeControl extends ListBox implements ControlModel
         for (TraineeData trainee : _aTrainees)
             addItem(trainee.getLabel()) ;
 
-        if (bAllowedMode)
-            addItem(constants.Less()) ;
-        else
-            addItem(constants.More()) ;
+        if (_bMoreOrLess)
+        {
+            if (bAllowedMode)
+                addItem(constants.Less()) ;
+            else
+                addItem(constants.More()) ;
+        }
         
         if (false == "".equals(_sPreSelectedId))
             initSelectedForId(_sPreSelectedId) ;
@@ -114,11 +119,14 @@ public class SelectTraineeControl extends ListBox implements ControlModel
         if ("".equals(sSelectedTrainee) || sSelectedTrainee.equals(constants.Undefined()))
             return -1 ;
         
-        if (sSelectedTrainee.equals(constants.More()))
-            return -2 ;
+        if (_bMoreOrLess)
+        {
+            if (sSelectedTrainee.equals(constants.More()))
+                return -2 ;
         
-        if (sSelectedTrainee.equals(constants.Less()))
-            return -3 ;
+            if (sSelectedTrainee.equals(constants.Less()))
+                return -3 ;
+        }
 
         int iSelectedTraineeId = -1 ; 
 

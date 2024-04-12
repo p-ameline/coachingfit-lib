@@ -150,7 +150,7 @@ public class CoachingFitFormView extends FormViewModel implements CoachingFitFor
             //
             List<TraineeData> aSortedTrainees = CoachingFitSupervisor.getSortedTraineesArray(_aTrainees) ;
 
-            SelectTraineeControl traineeControl = new SelectTraineeControl(aSortedTrainees, sControlPath, false, true) ;
+            SelectTraineeControl traineeControl = new SelectTraineeControl(aSortedTrainees, sControlPath, true, false, true) ;
 
             if ((null != sControlStyle) && false == "".equals(sControlStyle))
                 traineeControl.addStyleName(sControlStyle) ;
