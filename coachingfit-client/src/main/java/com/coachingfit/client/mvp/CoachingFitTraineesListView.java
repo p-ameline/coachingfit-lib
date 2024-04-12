@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget ;
 
 import com.google.inject.Inject ;
+import com.primege.client.loc.PrimegeViewConstants;
 import com.primege.shared.database.UserData;
 
 /**
@@ -41,7 +42,9 @@ import com.primege.shared.database.UserData;
  */
 public class CoachingFitTraineesListView extends Composite implements CoachingFitTraineesListPresenter.Display
 {
-    private final CoachingFitConstants  constants      = GWT.create(CoachingFitConstants.class) ;
+    private final CoachingFitConstants  constants    = GWT.create(CoachingFitConstants.class) ;
+    private final PrimegeViewConstants  prconstants  = GWT.create(PrimegeViewConstants.class) ;
+    
     private final FlowPanel             _workspace ;
     private       HTMLPanel             _h2 ;
 
@@ -68,11 +71,14 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     private       SelectCoachControl    _coachList ;
     private       SelectRegionControl   _regionList ;
     private       ListBox               _jobsList ;
+    private       TextBox               _passwordBox ;
     
     private       Button                _cancelButton ;
     private       Button                _unactiveButton ;
     private       Button                _saveButton ;
     private       Button                _newButton ;
+    
+    private       Button                _backButton ;
     
     @Inject
     public CoachingFitTraineesListView(final CoachingFitSupervisor supervisor)
@@ -108,6 +114,8 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     _newButton.addStyleName("button white") ;
                     
                     queryControls.setWidget(0, 4, _searchButton) ;
+                    queryControls.setWidget(0, 5, new HTML("&nbsp;")) ;
+                    queryControls.setWidget(0, 6, _newButton) ;
                     
                     _TraitsPanel.add(queryControls) ;
                     
@@ -136,6 +144,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     _jobsList     = new ListBox() ;
                     _coachList    = new SelectCoachControl() ;
                     _regionList   = new SelectRegionControl() ;
+                    _passwordBox  = new TextBox() ;
                     
                     // Edition controls table
                     //
@@ -152,10 +161,10 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     editionControls.setWidget(4, 1, _coachList) ;
                     editionControls.setWidget(5, 0, new Label(constants.generalRegion())) ;
                     editionControls.setWidget(5, 1, _regionList) ;
+                    editionControls.setWidget(6, 0, new Label(constants.generalPassword())) ;
+                    editionControls.setWidget(6, 1, _passwordBox) ;
                     
                     _editionPanel.add(editionControls) ;
-                    
-                    FlowPanel editButtonsPanel = new FlowPanel() ;
                     
                     _unactiveButton = new Button(constants.editButtonUnactive()) ;
                     _unactiveButton.addStyleName("button red") ;
@@ -166,12 +175,26 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
                     _cancelButton   = new Button(constants.editButtonCancel()) ;
                     _cancelButton.addStyleName("button orange") ;
                     
+                    FlexTable editButtonsControls = new FlexTable() ;
+                    editButtonsControls.setWidget(0, 0, _saveButton) ;
+                    editButtonsControls.setWidget(0, 1, new HTML("&nbsp;")) ;
+                    editButtonsControls.setWidget(0, 2, _cancelButton) ;
+                    editButtonsControls.setWidget(0, 3, new HTML("&nbsp;")) ;
+                    editButtonsControls.setWidget(0, 4, _unactiveButton) ;
+                    
+                    _editionPanel.add(editButtonsControls) ;
+                    
                     workspaceContainer.add(_editionPanel) ;
                     
                     _editionPanel.setVisible(false) ;
                 }
             }
             _workspace.add(workspaceContainer) ;
+            
+            _backButton = new Button(prconstants.generalLeave()) ;
+            _backButton.addStyleName("button green") ;
+            
+            _workspace.add(_backButton) ;
         }
 
         initWidget(_workspace) ;
@@ -459,6 +482,11 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     }
     
     @Override
+    public void setPassword(final String sPassword) {
+        _passwordBox.setText(sPassword) ;
+    }
+    
+    @Override
     public String getLastName() {
     	return _nameBox.getText() ;
     }
@@ -470,7 +498,7 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     
     @Override
     public String getJob() {
-    	return "" ;
+    	return _jobsList.getSelectedItemText() ;
     }
     
     @Override
@@ -488,20 +516,34 @@ public class CoachingFitTraineesListView extends Composite implements CoachingFi
     	return _regionList.getSelectedRegionId() ;
     }
 
+    @Override
+    public String getPassword() {
+        return _passwordBox.getText() ;
+    }
+    
+    @Override
     public HasClickHandlers getUnactiveButton() {
     	return _unactiveButton ;
     }
     
+    @Override
     public HasClickHandlers getSaveButton() {
     	return _saveButton ;
     }
     
+    @Override
     public HasClickHandlers getCancelButton() {
     	return _cancelButton ;
     }
     
+    @Override
     public HasClickHandlers getNewButton() {
     	return _newButton ;
+    }
+
+    @Override
+    public HasClickHandlers getBackButton() {
+        return _backButton ;
     }
     
     /**

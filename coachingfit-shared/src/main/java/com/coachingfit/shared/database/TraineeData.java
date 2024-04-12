@@ -162,7 +162,7 @@ public class TraineeData implements IsSerializable
         _sLabel = (null == sFirstName) ? "" : sFirstName ;
 
         if ((null != sLastName) && (false == sLastName.isEmpty()))
-            _sLabel = _sLabel.isEmpty() ? sLastName : " " + sLastName ;
+            _sLabel += _sLabel.isEmpty() ? sLastName : " " + sLastName ;
     }
 
     public String getFirstName() {

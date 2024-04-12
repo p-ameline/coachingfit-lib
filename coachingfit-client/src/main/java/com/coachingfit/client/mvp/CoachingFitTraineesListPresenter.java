@@ -33,7 +33,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers ;
 import com.google.gwt.user.client.rpc.AsyncCallback ;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.inject.Inject ;
-
+import com.primege.client.event.GoToLoginResponseEvent;
 import com.primege.shared.database.UserData;
 
 /**
@@ -50,12 +50,15 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
     private List<UserData>              _aCoachs   = new ArrayList<>() ;
     private List<RegionData>            _aRegions  = new ArrayList<>() ;
 
+    private TraineeData                 _editedTrainee ;
+    
     private final DispatchAsync         _dispatcher ;
     private final CoachingFitSupervisor _supervisor ;
     private       Logger                _logger = Logger.getLogger("") ;
 
     public interface Display extends WidgetDisplay
     {
+        HasClickHandlers    getBackButton() ;
         HasClickHandlers    getSearchButton() ;
         HasClickHandlers    getNewButton() ;
         HasClickHandlers    getFlexTable() ;
@@ -87,6 +90,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         void                setMail(final String sMail) ;
         void                setCoach(final int iCoachId) ;
         void                setRegion(final int iRegionId) ;
+        void                setPassword(final String sPassword) ;
 
         String              getLastName() ;
         String              getFirstName() ;
@@ -94,6 +98,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         String              getMail() ;
         int                 getCoach() ;
         int                 getRegion() ;
+        String              getPassword() ;
     }
 
     @Inject
@@ -101,11 +106,13 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
     {
         super(display, eventBus) ;
 
-        _dispatcher          = dispatcher ;
-        _supervisor          = supervisor ;
+        _dispatcher       = dispatcher ;
+        _supervisor       = supervisor ;
 
-        _iSortedColumn       = -1 ;
-        _bNaturallySorted    = true ;
+        _iSortedColumn    = -1 ;
+        _bNaturallySorted = true ;
+        
+        _editedTrainee    = null ;
 
         bind() ;
 
@@ -127,6 +134,17 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
             }
         }) ;
 
+        // Click back button
+        //
+        display.getBackButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                eventBus.fireEvent(new GoToLoginResponseEvent()) ;
+            }
+        }) ;
+
         // Click search according to entered traits
         //
         display.getSearchButton().addClickHandler(new ClickHandler()
@@ -137,7 +155,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
                 reloadList() ;
             }
         }) ;
-
+        
         // Click on trainees list
         //
         display.getFlexTableClick().addClickHandler(new ClickHandler()
@@ -158,11 +176,11 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
 
                     display.setSelectedRow(iClickedRow) ;
 
-                    TraineeData trainee = getTraineeAtRow(iClickedRow) ;
-                    if (null == trainee)
+                    _editedTrainee = getTraineeAtRow(iClickedRow) ;
+                    if (null == _editedTrainee)
                         return ;
 
-                    editTrainee(trainee) ;
+                    editTrainee() ;
                 }
             }
         }) ;
@@ -189,6 +207,28 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
             }
         }) ;
 
+        // Click to unactivate trainee
+        //
+        display.getUnactiveButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                unactivateTrainee() ;
+            }
+        }) ;
+
+        // Click to unactivate trainee
+        //
+        display.getCancelButton().addClickHandler(new ClickHandler()
+        {
+            @Override
+            public void onClick(final ClickEvent event)
+            {
+                cancelEdition() ;
+            }
+        }) ;
+        
         // Initialize columns and search interface elements
         //
         initDisplay() ;
@@ -203,14 +243,14 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
      * 
      * @param trainee trainee information to edit
      */
-    private void editTrainee(TraineeData trainee)
+    private void editTrainee()
     {
         display.showEditionPanel() ;
 
-        if (null == trainee)
+        if (null == _editedTrainee)
             resetEditionControls() ;
         else
-            setEditionControls(trainee);
+            setEditionControls();
     }
 
     /**
@@ -224,25 +264,27 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         display.setMail("") ;
         display.setCoach(0) ;
         display.setRegion(0) ;
+        display.setPassword("") ;
     }
 
     /**
      * Set all information in the edition panel to a trainee's values
      */
-    private void setEditionControls(TraineeData trainee)
+    private void setEditionControls()
     {
-        if (null == trainee)
+        if (null == _editedTrainee)
         {
             resetEditionControls() ;
             return ;
         }
 
-        display.setLastName(trainee.getLastName()) ;
-        display.setFirstName(trainee.getFirstName()) ;
-        display.setJob(trainee.getJobType()) ;
-        display.setMail(trainee.getEMail()) ;
-        display.setCoach(trainee.getCoachId()) ;
-        display.setRegion(trainee.getRegionId()) ;
+        display.setLastName(_editedTrainee.getLastName()) ;
+        display.setFirstName(_editedTrainee.getFirstName()) ;
+        display.setJob(_editedTrainee.getJobType()) ;
+        display.setMail(_editedTrainee.getEMail()) ;
+        display.setCoach(_editedTrainee.getCoachId()) ;
+        display.setRegion(_editedTrainee.getRegionId()) ;
+        display.setPassword(_editedTrainee.getPassword()) ;
     }
 
     /**
@@ -260,7 +302,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
      */
     private void saveChanges()
     {
-        TraineeData trainee = new TraineeData() ;
+        TraineeData trainee = new TraineeData(_editedTrainee) ;
 
         fillTraineeFromForm(trainee) ;
 
@@ -271,7 +313,32 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         //
         _dispatcher.execute(new RecordTraineeAction(_supervisor.getUserId(), trainee), new recordTraineeCallback()) ;
     }
+    
+    /**
+     * Unactivate currently edited trainee (set coach identifier and region identifier to <code>0</code>)
+     */
+    private void unactivateTrainee()
+    {
+        TraineeData trainee = new TraineeData(_editedTrainee) ;
+        
+        fillTraineeFromForm(trainee) ;
 
+        trainee.setCoachId(0) ;
+        trainee.setRegionId(0) ;
+        
+        // Ask the server for corresponding information
+        //
+        _dispatcher.execute(new RecordTraineeAction(_supervisor.getUserId(), trainee), new recordTraineeCallback()) ;
+    }
+
+    /**
+     * Cancel the edition process (close the edition screen with no changes)
+     */
+    private void cancelEdition()
+    {
+        closeEditionPanel() ;
+    }
+    
     /**
      * Callback function called when the server returns information from files processing
      */
@@ -300,12 +367,22 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
 
             _logger.info("Trainees information have been recorded successfully") ;
 
-            resetEditionControls() ;
-
-            display.hideEditionPanel() ;
+            closeEditionPanel() ;
             
             reloadList() ;
         }
+    }
+    
+    /**
+     * Close the edition panel, reset its controls and nullify edited trainee
+     */
+    private void closeEditionPanel()
+    {
+        _editedTrainee = null ;
+        
+        resetEditionControls() ;
+
+        display.hideEditionPanel() ;
     }
     
     /**
@@ -328,6 +405,7 @@ public class CoachingFitTraineesListPresenter extends WidgetPresenter<CoachingFi
         trainee.setEMail(display.getMail()) ;
         trainee.setCoachId(display.getCoach()) ;
         trainee.setRegionId(display.getRegion()) ;
+        trainee.setPassword(display.getPassword()) ;
     }
 
     /**

@@ -47,7 +47,7 @@ public class TraineeDataManager
 
 		String sFctName = _sClassName + ".insertData" ;
 
-		String sQuery = "INSERT INTO trainee (traineeLabel, traineeFirst, coachID, regionID, email, jobType, jobStartDate, traineePass) VALUES (?, ?, ?, ?, ?, ?, ?)" ;
+		String sQuery = "INSERT INTO trainee (traineeLabel, traineeFirst, coachID, regionID, email, jobType, jobStartDate, traineePass) VALUES (?, ?, ?, ?, ?, ?, ?, ?)" ;
 		_dbConnector.prepareStatememt(sQuery, Statement.RETURN_GENERATED_KEYS) ;
 		if (null == _dbConnector.getPreparedStatement())
 		{

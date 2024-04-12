@@ -5,6 +5,8 @@ import com.google.gwt.i18n.client.Constants;
 public interface CoachingFitConstants extends Constants
 {
 	String Undefined() ;
+	String More();
+	String Less() ;
 
 	String formsCoach() ;
 	String formsTrainees() ;

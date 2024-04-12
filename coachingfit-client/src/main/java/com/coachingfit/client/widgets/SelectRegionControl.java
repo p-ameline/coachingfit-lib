@@ -22,224 +22,230 @@ import com.primege.shared.database.FormDataData;
  */
 public class SelectRegionControl extends ListBox implements ControlModel
 {
-	private final CoachingFitConstants constants = GWT.create(CoachingFitConstants.class) ;
+    private final CoachingFitConstants constants = GWT.create(CoachingFitConstants.class) ;
 
-	private ControlBaseWithParams _base ;
+    private ControlBaseWithParams _base ;
 
-	private RegionData            _region ;
-	
-	private List<RegionData>      _aRegions ;
-	
-	/**
-	 * Void Constructor
-	 */
-	public SelectRegionControl()
-	{
-		super() ;
+    private RegionData            _region ;
 
-		_base     = null ;
-		_aRegions = null ;
-		_region   = null ;
+    private List<RegionData>      _aRegions ;
 
-		setVisibleItemCount(1) ;
-	}
-	
-	/**
-	 * Default Constructor
-	 */
-	public SelectRegionControl(final List<RegionData> aRegions, final RegionData region, final String sPath)
-	{
-		super() ;
+    /**
+     * Void Constructor
+     */
+    public SelectRegionControl()
+    {
+        super() ;
 
-		_base     = new ControlBaseWithParams(sPath) ;
-		_aRegions = aRegions ;
-		_region   = region ;
+        _base     = null ;
+        _aRegions = null ;
+        _region   = null ;
 
-		init() ;
+        setVisibleItemCount(1) ;
+    }
 
-		setVisibleItemCount(1) ;
-		setItemSelected(0, true) ;
-	}
+    /**
+     * Default Constructor
+     */
+    public SelectRegionControl(final List<RegionData> aRegions, final RegionData region, final String sPath)
+    {
+        super() ;
 
-	public boolean isSingleData() {
-		return true ;
-	}
+        _base     = new ControlBaseWithParams(sPath) ;
+        _aRegions = aRegions ;
+        _region   = region ;
 
-	public void setParameters(final List<RegionData> aRegions, final RegionData region, final String sPath)
-	{
-		_base     = new ControlBaseWithParams(sPath) ;
-		_aRegions = aRegions ;
-		_region   = region ;
+        init() ;
 
-		init() ;
+        setVisibleItemCount(1) ;
+        setItemSelected(0, true) ;
+    }
 
-		setVisibleItemCount(1) ;
-		setItemSelected(0, true) ;
-	}
-	
-	/**
-	 * Initialize the list with trainees - the first being "undefined" 
-	 *
-	 */
-	public void init()
-	{
-		addItem(constants.Undefined()) ;
-		
-		if (null == _aRegions)
-			return ;
-		
-		if (null != _region)
-			_aRegions.add(new RegionData(_region)) ;
-		
-		Comparator<RegionData> regionNameComparator = new Comparator<RegionData>()
-		{
-	    @Override
-	    public int compare(RegionData left, RegionData right) {
-	      return left.getLabel().compareTo(right.getLabel()) ;
-	    }
-		};
+    public boolean isSingleData() {
+        return true ;
+    }
 
-		Collections.sort(_aRegions, regionNameComparator) ;
-		
-		for (RegionData region : _aRegions)
-			addItem(region.getLabel()) ;
-	}
+    public void setParameters(final List<RegionData> aRegions, final RegionData region, final String sPath)
+    {
+        _base     = new ControlBaseWithParams(sPath) ;
+        _aRegions = aRegions ;
+        _region   = region ;
 
-	/**
-	 * Return the selected region, or <code>null</code> if none
-	 */
-	public RegionData getSelectedRegion()
-	{
-		String sSelectedRegion = getSelectedValue() ;
+        init() ;
 
-		if ("".equals(sSelectedRegion) || sSelectedRegion.equals(constants.Undefined()))
-			return null ;
+        setVisibleItemCount(1) ;
+        setItemSelected(0, true) ;
+    }
 
-		if ((null == _aRegions) || _aRegions.isEmpty())
-			return null ;
+    /**
+     * Initialize the list with trainees - the first being "undefined" 
+     *
+     */
+    public void init()
+    {
+        addItem(constants.Undefined()) ;
 
-		for (RegionData region : _aRegions)
-			if (sSelectedRegion.equals(region.getLabel()))
-				return region ;
+        if (null == _aRegions)
+            return ;
 
-		return null ; 
-	}
+        if (null != _region)
+            _aRegions.add(new RegionData(_region)) ;
 
-	/**
-	 * Return the selected region identifier is any, or <code>-1</code> if none
-	 */
-	public int getSelectedRegionId()
-	{
-		RegionData selectedRegion = getSelectedRegion() ;
-		
-		if (null == selectedRegion)
-			return -1 ;
-		
-		return selectedRegion.getId() ;
-	}
-		
-	/**
-	 * Get region information from it's identifier 
-	 */
-	public RegionData getRegionFromId(final int iRegionId)
-	{
-		if ((null == _aRegions) || _aRegions.isEmpty())
-			return null ;
+        Comparator<RegionData> regionNameComparator = new Comparator<RegionData>()
+        {
+            @Override
+            public int compare(RegionData left, RegionData right) {
+                return left.getLabel().compareTo(right.getLabel()) ;
+            }
+        };
 
-		for (RegionData region : _aRegions)
-			if (region.getId() == iRegionId)
-				return region ;
+        Collections.sort(_aRegions, regionNameComparator) ;
 
-		return null ;
-	}
+        for (RegionData region : _aRegions)
+            addItem(region.getLabel()) ;
+    }
 
-	public ControlBase getControlBase() {
-		return _base ;
-	}
+    /**
+     * Return the selected region, or <code>null</code> if none
+     */
+    public RegionData getSelectedRegion()
+    {
+        String sSelectedRegion = getSelectedValue() ;
 
-	public void setInitFromPrev(final boolean bInitFromPrev) {
-		_base.setInitFromPrev(bInitFromPrev) ;
-	}
+        if ("".equals(sSelectedRegion) || sSelectedRegion.equals(constants.Undefined()))
+            return null ;
 
-	public boolean getInitFromPrev() {
-		return _base.getInitFromPrev() ;
-	}
+        if ((null == _aRegions) || _aRegions.isEmpty())
+            return null ;
 
-	/**
-	 * Initialize state from a content and a default value
-	 *
-	 * @param content       FormDataData used to initialize the control
-	 * @param sDefaultValue Configuration parameters, including default value in case there is no content 
-	 */
-	@Override
-	public void setContent(final FormDataData content, final String sDefaultValue) 
-	{
-		_base.parseParams(sDefaultValue) ;
+        for (RegionData region : _aRegions)
+            if (sSelectedRegion.equals(region.getLabel()))
+                return region ;
 
-		setContent(content) ;
-	}
+        return null ; 
+    }
 
-	/**
-	 * Initialize state from a content
-	 *
-	 * @param content FormDataData used to initialize the control
-	 */
-	@Override
-	public void setContent(final FormDataData content)
-	{
-		if (null == content)
-		{
-			setItemSelected(0, true) ;
-			return ;
-		}
+    /**
+     * Return the selected region identifier is any, or <code>-1</code> if none
+     */
+    public int getSelectedRegionId()
+    {
+        RegionData selectedRegion = getSelectedRegion() ;
 
-		String sRegionId = content.getValue() ;
+        if (null == selectedRegion)
+            return -1 ;
 
-		if ((null == sRegionId) || "".equals(sRegionId))
-			sRegionId = _base.getDefaultValue() ;
+        return selectedRegion.getId() ;
+    }
 
-		if ((null == sRegionId) || "".equals(sRegionId))
-		{
-			setItemSelected(0, true) ;
-			return ;
-		}
+    /**
+     * Get region information from it's identifier 
+     */
+    public RegionData getRegionFromId(final int iRegionId)
+    {
+        if ((null == _aRegions) || _aRegions.isEmpty())
+            return null ;
 
-		setSelectedRegion(Integer.parseInt(sRegionId)) ;
-	}
+        for (RegionData region : _aRegions)
+            if (region.getId() == iRegionId)
+                return region ;
 
-	public void setSelectedRegion(int iRegionId)
-	{
-		RegionData region = getRegionFromId(iRegionId) ;
-		if (null == region)
-			return ;
+        return null ;
+    }
 
-		String sRegionLabel = region.getLabel() ;
-		if ("".equals(sRegionLabel))
-			return ;
+    public ControlBase getControlBase() {
+        return _base ;
+    }
 
-		int iSize = getItemCount() ;
-		for (int i = 0 ; i < iSize ; i++)
-			if (getItemText(i).equals(sRegionLabel))
-			{
-				setItemSelected(i, true) ;
-				return ;
-			}
-	}
-	
-	public void resetContent() {
-		setItemSelected(0, true) ;
-	}
+    public void setInitFromPrev(final boolean bInitFromPrev) {
+        _base.setInitFromPrev(bInitFromPrev) ;
+    }
 
-	@Override
-	public FormDataData getContent() 
-	{
-		int iSelectedRegionId = getSelectedRegionId() ;
-		if (-1 == iSelectedRegionId)
-			return null ;
+    public boolean getInitFromPrev() {
+        return _base.getInitFromPrev() ;
+    }
 
-		FormDataData formData = new FormDataData() ;
-		formData.setPath(_base.getPath()) ;
-		formData.setValue(Integer.toString(iSelectedRegionId)) ;
-		return formData ;
-	}
+    /**
+     * Initialize state from a content and a default value
+     *
+     * @param content       FormDataData used to initialize the control
+     * @param sDefaultValue Configuration parameters, including default value in case there is no content 
+     */
+    @Override
+    public void setContent(final FormDataData content, final String sDefaultValue) 
+    {
+        _base.parseParams(sDefaultValue) ;
+
+        setContent(content) ;
+    }
+
+    /**
+     * Initialize state from a content
+     *
+     * @param content FormDataData used to initialize the control
+     */
+    @Override
+    public void setContent(final FormDataData content)
+    {
+        if (null == content)
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        String sRegionId = content.getValue() ;
+
+        if ((null == sRegionId) || "".equals(sRegionId))
+            sRegionId = _base.getDefaultValue() ;
+
+        if ((null == sRegionId) || "".equals(sRegionId))
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        setSelectedRegion(Integer.parseInt(sRegionId)) ;
+    }
+
+    public void setSelectedRegion(int iRegionId)
+    {
+        if (iRegionId <= 0)
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        RegionData region = getRegionFromId(iRegionId) ;
+        if (null == region)
+            return ;
+
+        String sRegionLabel = region.getLabel() ;
+        if ("".equals(sRegionLabel))
+            return ;
+
+        int iSize = getItemCount() ;
+        for (int i = 0 ; i < iSize ; i++)
+            if (getItemText(i).equals(sRegionLabel))
+            {
+                setItemSelected(i, true) ;
+                return ;
+            }
+    }
+
+    public void resetContent() {
+        setItemSelected(0, true) ;
+    }
+
+    @Override
+    public FormDataData getContent() 
+    {
+        int iSelectedRegionId = getSelectedRegionId() ;
+        if (-1 == iSelectedRegionId)
+            return null ;
+
+        FormDataData formData = new FormDataData() ;
+        formData.setPath(_base.getPath()) ;
+        formData.setValue(Integer.toString(iSelectedRegionId)) ;
+        return formData ;
+    }
 }

@@ -25,309 +25,315 @@ import com.primege.shared.database.UserData;
  */
 public class SelectCoachControl extends ListBox implements ControlModel
 {
-	private final CoachingFitConstants constants = GWT.create(CoachingFitConstants.class) ;
+    private final CoachingFitConstants constants = GWT.create(CoachingFitConstants.class) ;
 
-	private ControlBaseWithParams _base ;
+    private ControlBaseWithParams _base ;
 
-	private UserData              _user ;
-	
-	private List<UserData>        _aCoachs ;
-	private List<TraineeData>     _aCoachingTrainees ;
+    private UserData              _user ;
 
-	private List<Person>          _aPersons = new ArrayList<Person>() ;
-	
-	public static class Person
-	{
-		public enum PersonType { coach, trainee } ;
-		
-		protected String     _sLabel ;
-		protected PersonType _iPersonType ;
-		protected int        _iID ;
-		
-		protected String     _sLastSortableName ;
-		
-		public Person(final String sLabel, PersonType iPersonType, int iID)
-		{
-			_sLabel      = sLabel ;
-			_iPersonType = iPersonType ;
-			_iID         = iID ;
-			
-			_sLastSortableName = processLastSortableName() ;
-		}
-		
-		public String getLabel() {
-			return _sLabel ;
-		}
-		public String getLastName() {
-			return CoachingFitSupervisor.getLastName(_sLabel) ;
-		}
-		public String processLastSortableName()
-		{
-			String sLastName = getLastName() ;
-			return CoachingFitSupervisor.getSortableLastName(sLastName) ;
-		}
-		public String getLastSortableName() {
-			return _sLastSortableName ;
-		}
-		public PersonType getPersonType() {
-			return _iPersonType ;
-		}
-		public int getID() {
-			return _iID ;
-		}
-	}
-	
-	public SelectCoachControl()
-	{
-		super() ;
+    private List<UserData>        _aCoachs ;
+    private List<TraineeData>     _aCoachingTrainees ;
 
-		_base              = null ;
-		_aCoachs           = null ;
-		_aCoachingTrainees = null ;
-		_user              = null ;
+    private List<Person>          _aPersons = new ArrayList<Person>() ;
 
-		setVisibleItemCount(1) ;
-	}
-	
-	/**
-	 * Default Constructor
-	 *
-	 */
-	public SelectCoachControl(final List<UserData> aCoachs, final List<TraineeData> aCoachingTrainees, final UserData user, final String sPath)
-	{
-		super() ;
+    public static class Person
+    {
+        public enum PersonType { coach, trainee } ;
 
-		setParameters(aCoachs, aCoachingTrainees, user, sPath) ;
-	}
+        protected String     _sLabel ;
+        protected PersonType _iPersonType ;
+        protected int        _iID ;
 
-	public boolean isSingleData() {
-		return true ;
-	}
+        protected String     _sLastSortableName ;
 
-	public void setParameters(final List<UserData> aCoachs, final List<TraineeData> aCoachingTrainees, final UserData user, final String sPath)
-	{
-		_base              = new ControlBaseWithParams(sPath) ;
-		_aCoachs           = aCoachs ;
-		_aCoachingTrainees = aCoachingTrainees ;
-		_user              = user ;
+        public Person(final String sLabel, PersonType iPersonType, int iID)
+        {
+            _sLabel      = sLabel ;
+            _iPersonType = iPersonType ;
+            _iID         = iID ;
 
-		init() ;
+            _sLastSortableName = processLastSortableName() ;
+        }
 
-		setVisibleItemCount(1) ;
-		setItemSelected(0, true) ;
-	}
-	
-	/**
-	 * Initialize the list with trainees - the first being "undefined" 
-	 *
-	 */
-	public void init()
-	{
-		addItem(constants.Undefined()) ;
+        public String getLabel() {
+            return _sLabel ;
+        }
+        public String getLastName() {
+            return CoachingFitSupervisor.getLastName(_sLabel) ;
+        }
+        public String processLastSortableName()
+        {
+            String sLastName = getLastName() ;
+            return CoachingFitSupervisor.getSortableLastName(sLastName) ;
+        }
+        public String getLastSortableName() {
+            return _sLastSortableName ;
+        }
+        public PersonType getPersonType() {
+            return _iPersonType ;
+        }
+        public int getID() {
+            return _iID ;
+        }
+    }
 
-		if (null == _aPersons)
-			return ;
-		
-		_aPersons.clear() ;
-		
-		if ((null != _aCoachs) && (false == _aCoachs.isEmpty()))
-			for (UserData user : _aCoachs)
-				_aPersons.add(new Person(user.getLabel(), Person.PersonType.coach, user.getId())) ;
-		
-		if (null != _user)
-			_aPersons.add(new Person(_user.getLabel(), Person.PersonType.coach, _user.getId())) ;
-		
-		if ((null != _aCoachingTrainees) && (false == _aCoachingTrainees.isEmpty()))
-			for (TraineeData trainee : _aCoachingTrainees)
-				_aPersons.add(new Person("*" + trainee.getLabel(), Person.PersonType.trainee, trainee.getId())) ;
-		
-		if (_aPersons.isEmpty())
-			return ;
-		
-		Comparator<Person> lastTraineeNameComparator = new Comparator<Person>()
-		{
-	    @Override
-	    public int compare(Person left, Person right) {
-	      return left.getLastSortableName().compareTo(right.getLastSortableName()) ;
-	    }
-		};
+    public SelectCoachControl()
+    {
+        super() ;
 
-		Collections.sort(_aPersons, lastTraineeNameComparator) ;
-		
-		for (Person person : _aPersons)
-			addItem(person.getLabel()) ;
-	}
+        _base              = null ;
+        _aCoachs           = null ;
+        _aCoachingTrainees = null ;
+        _user              = null ;
 
-	/**
-	 * Return the selected person, or <code>null</code> if none
-	 */
-	public Person getSelectedPerson()
-	{
-		String sSelectedCoach = getSelectedValue() ;
+        setVisibleItemCount(1) ;
+    }
 
-		if ("".equals(sSelectedCoach) || sSelectedCoach.equals(constants.Undefined()))
-			return null ;
+    /**
+     * Default Constructor
+     *
+     */
+    public SelectCoachControl(final List<UserData> aCoachs, final List<TraineeData> aCoachingTrainees, final UserData user, final String sPath)
+    {
+        super() ;
 
-		if ((null == _aPersons) || _aPersons.isEmpty())
-			return null ;
+        setParameters(aCoachs, aCoachingTrainees, user, sPath) ;
+    }
 
-		for (Person person : _aPersons)
-			if (sSelectedCoach.equals(person.getLabel()))
-				return person ;
+    public boolean isSingleData() {
+        return true ;
+    }
 
-		return null ; 
-	}
+    public void setParameters(final List<UserData> aCoachs, final List<TraineeData> aCoachingTrainees, final UserData user, final String sPath)
+    {
+        _base              = new ControlBaseWithParams(sPath) ;
+        _aCoachs           = aCoachs ;
+        _aCoachingTrainees = aCoachingTrainees ;
+        _user              = user ;
 
-	/**
-	 * Return the selected coach Id is any, or <code>-1</code> if none
-	 */
-	public int getSelectedCoachId()
-	{
-		Person selectedPerson = getSelectedPerson() ;
-		
-		if (null == selectedPerson)
-			return -1 ;
-		
-		if (Person.PersonType.coach == selectedPerson.getPersonType())
-			return selectedPerson.getID() ;
-			
-		return -1 ; 
-	}
+        init() ;
 
-	public void setSelectedCoach(int iCoachId)
-	{
-		UserData coach = getCoachFromId(iCoachId) ;
-		
-		if (null == coach)
-			return ;
-		
-		int iIndex = 1 ;
-		
-		for (Person person : _aPersons)
-		{
-			if ((Person.PersonType.coach == person.getPersonType()) && (person.getID() == iCoachId))
-			{
-				setItemSelected(iIndex, true) ;
-				break ;
-			}
-			
-			iIndex++ ;
-		}
-	}
-	
-	/**
-	 * Return the selected coaching trainee Id is any, or <code>-1</code> if none
-	 */
-	public int getSelectedCoachingTraineeId()
-	{
-		Person selectedPerson = getSelectedPerson() ;
-		
-		if (null == selectedPerson)
-			return -1 ;
-		
-		if (Person.PersonType.trainee == selectedPerson.getPersonType())
-			return selectedPerson.getID() ;
-			
-		return -1 ; 
-	}
-	
-	/**
-	 * Get user information from it's identifier 
-	 */
-	public UserData getCoachFromId(final int iCoachId)
-	{
-		if ((null == _aCoachs) || _aCoachs.isEmpty())
-			return null ;
+        setVisibleItemCount(1) ;
+        setItemSelected(0, true) ;
+    }
 
-		for (UserData coach : _aCoachs)
-			if (coach.getId() == iCoachId)
-				return coach ;
+    /**
+     * Initialize the list with trainees - the first being "undefined" 
+     *
+     */
+    public void init()
+    {
+        addItem(constants.Undefined()) ;
 
-		return null ;
-	}
+        if (null == _aPersons)
+            return ;
 
-	public ControlBase getControlBase() {
-		return _base ;
-	}
+        _aPersons.clear() ;
 
-	public void setInitFromPrev(final boolean bInitFromPrev) {
-		_base.setInitFromPrev(bInitFromPrev) ;
-	}
+        if ((null != _aCoachs) && (false == _aCoachs.isEmpty()))
+            for (UserData user : _aCoachs)
+                _aPersons.add(new Person(user.getLabel(), Person.PersonType.coach, user.getId())) ;
 
-	public boolean getInitFromPrev() {
-		return _base.getInitFromPrev() ;
-	}
+        if (null != _user)
+            _aPersons.add(new Person(_user.getLabel(), Person.PersonType.coach, _user.getId())) ;
 
-	/**
-	 * Initialize state from a content and a default value
-	 *
-	 * @param content       FormDataData used to initialize the control
-	 * @param sDefaultValue Configuration parameters, including default value in case there is no content 
-	 */
-	@Override
-	public void setContent(final FormDataData content, final String sDefaultValue) 
-	{
-		_base.parseParams(sDefaultValue) ;
+        if ((null != _aCoachingTrainees) && (false == _aCoachingTrainees.isEmpty()))
+            for (TraineeData trainee : _aCoachingTrainees)
+                _aPersons.add(new Person("*" + trainee.getLabel(), Person.PersonType.trainee, trainee.getId())) ;
 
-		setContent(content) ;
-	}
+        if (_aPersons.isEmpty())
+            return ;
 
-	/**
-	 * Initialize state from a content
-	 *
-	 * @param content FormDataData used to initialize the control
-	 */
-	@Override
-	public void setContent(final FormDataData content)
-	{
-		if (null == content)
-		{
-			setItemSelected(0, true) ;
-			return ;
-		}
+        Comparator<Person> lastTraineeNameComparator = new Comparator<Person>()
+        {
+            @Override
+            public int compare(Person left, Person right) {
+                return left.getLastSortableName().compareTo(right.getLastSortableName()) ;
+            }
+        };
 
-		String sCoachId = content.getValue() ;
+        Collections.sort(_aPersons, lastTraineeNameComparator) ;
 
-		if ((null == sCoachId) || "".equals(sCoachId))
-			sCoachId = _base.getDefaultValue() ;
+        for (Person person : _aPersons)
+            addItem(person.getLabel()) ;
+    }
 
-		if ((null == sCoachId) || "".equals(sCoachId))
-		{
-			setItemSelected(0, true) ;
-			return ;
-		}
+    /**
+     * Return the selected person, or <code>null</code> if none
+     */
+    public Person getSelectedPerson()
+    {
+        String sSelectedCoach = getSelectedValue() ;
 
-		UserData coach = getCoachFromId(Integer.parseInt(sCoachId)) ;
-		if (null == coach)
-			return ;
+        if ("".equals(sSelectedCoach) || sSelectedCoach.equals(constants.Undefined()))
+            return null ;
 
-		String sCoachLabel = coach.getLabel() ;		
-		if ("".equals(sCoachLabel))
-			return ;
+        if ((null == _aPersons) || _aPersons.isEmpty())
+            return null ;
 
-		int iSize = getItemCount() ;
-		for (int i = 0 ; i < iSize ; i++)
-			if (getItemText(i).equals(sCoachLabel))
-			{
-				setItemSelected(i, true) ;
-				return ;
-			}
-	}
+        for (Person person : _aPersons)
+            if (sSelectedCoach.equals(person.getLabel()))
+                return person ;
 
-	public void resetContent() {
-		setItemSelected(0, true) ;
-	}
+        return null ; 
+    }
 
-	@Override
-	public FormDataData getContent() 
-	{
-		int iSelectedCoachId = getSelectedCoachId() ;
-		if (-1 == iSelectedCoachId)
-			return null ;
+    /**
+     * Return the selected coach Id is any, or <code>-1</code> if none
+     */
+    public int getSelectedCoachId()
+    {
+        Person selectedPerson = getSelectedPerson() ;
 
-		FormDataData formData = new FormDataData() ;
-		formData.setPath(_base.getPath()) ;
-		formData.setValue(Integer.toString(iSelectedCoachId)) ;
-		return formData ;
-	}
+        if (null == selectedPerson)
+            return -1 ;
+
+        if (Person.PersonType.coach == selectedPerson.getPersonType())
+            return selectedPerson.getID() ;
+
+        return -1 ; 
+    }
+
+    public void setSelectedCoach(int iCoachId)
+    {
+        if (iCoachId <= 0)
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        UserData coach = getCoachFromId(iCoachId) ;
+
+        if (null == coach)
+            return ;
+
+        int iIndex = 1 ;
+
+        for (Person person : _aPersons)
+        {
+            if ((Person.PersonType.coach == person.getPersonType()) && (person.getID() == iCoachId))
+            {
+                setItemSelected(iIndex, true) ;
+                break ;
+            }
+
+            iIndex++ ;
+        }
+    }
+
+    /**
+     * Return the selected coaching trainee Id is any, or <code>-1</code> if none
+     */
+    public int getSelectedCoachingTraineeId()
+    {
+        Person selectedPerson = getSelectedPerson() ;
+
+        if (null == selectedPerson)
+            return -1 ;
+
+        if (Person.PersonType.trainee == selectedPerson.getPersonType())
+            return selectedPerson.getID() ;
+
+        return -1 ; 
+    }
+
+    /**
+     * Get user information from it's identifier 
+     */
+    public UserData getCoachFromId(final int iCoachId)
+    {
+        if ((null == _aCoachs) || _aCoachs.isEmpty())
+            return null ;
+
+        for (UserData coach : _aCoachs)
+            if (coach.getId() == iCoachId)
+                return coach ;
+
+        return null ;
+    }
+
+    public ControlBase getControlBase() {
+        return _base ;
+    }
+
+    public void setInitFromPrev(final boolean bInitFromPrev) {
+        _base.setInitFromPrev(bInitFromPrev) ;
+    }
+
+    public boolean getInitFromPrev() {
+        return _base.getInitFromPrev() ;
+    }
+
+    /**
+     * Initialize state from a content and a default value
+     *
+     * @param content       FormDataData used to initialize the control
+     * @param sDefaultValue Configuration parameters, including default value in case there is no content 
+     */
+    @Override
+    public void setContent(final FormDataData content, final String sDefaultValue) 
+    {
+        _base.parseParams(sDefaultValue) ;
+
+        setContent(content) ;
+    }
+
+    /**
+     * Initialize state from a content
+     *
+     * @param content FormDataData used to initialize the control
+     */
+    @Override
+    public void setContent(final FormDataData content)
+    {
+        if (null == content)
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        String sCoachId = content.getValue() ;
+
+        if ((null == sCoachId) || "".equals(sCoachId))
+            sCoachId = _base.getDefaultValue() ;
+
+        if ((null == sCoachId) || "".equals(sCoachId))
+        {
+            setItemSelected(0, true) ;
+            return ;
+        }
+
+        UserData coach = getCoachFromId(Integer.parseInt(sCoachId)) ;
+        if (null == coach)
+            return ;
+
+        String sCoachLabel = coach.getLabel() ;		
+        if ("".equals(sCoachLabel))
+            return ;
+
+        int iSize = getItemCount() ;
+        for (int i = 0 ; i < iSize ; i++)
+            if (getItemText(i).equals(sCoachLabel))
+            {
+                setItemSelected(i, true) ;
+                return ;
+            }
+    }
+
+    public void resetContent() {
+        setItemSelected(0, true) ;
+    }
+
+    @Override
+    public FormDataData getContent() 
+    {
+        int iSelectedCoachId = getSelectedCoachId() ;
+        if (-1 == iSelectedCoachId)
+            return null ;
+
+        FormDataData formData = new FormDataData() ;
+        formData.setPath(_base.getPath()) ;
+        formData.setValue(Integer.toString(iSelectedCoachId)) ;
+        return formData ;
+    }
 }
