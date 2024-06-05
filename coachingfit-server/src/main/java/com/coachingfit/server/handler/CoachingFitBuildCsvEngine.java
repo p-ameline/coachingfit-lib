@@ -46,24 +46,30 @@ public class CoachingFitBuildCsvEngine
 		_aRegions  = null ;
 	}
 
-	public String execute(final int iUserId, final CsvStructure csvStructure)
+	public String execute(final int iUserId, final CsvStructure csvStructure, final String sFileName)
 	{
 		String sFunctionName = "CoachingFitBuildCsvEngine.execute" ;
 
 		if (null == csvStructure)
 			return "Invalid parameters" ;
 
-		Logger.trace(sFunctionName + " CSV file creation started to file \"" + DbParameters.getCSV() + "\".", iUserId, Logger.TraceLevel.DETAIL) ;
+		String sCsvFullFileName = "" ;
+		if ((null == sFileName) || sFileName.isEmpty())
+		    sCsvFullFileName = DbParameters.getCSV() ;
+		else
+		    sCsvFullFileName = DbParameters.getArchetypeDir() + sFileName ;
+		    
+		Logger.trace(sFunctionName + " CSV file creation started to file \"" + sCsvFullFileName + "\".", iUserId, Logger.TraceLevel.DETAIL) ;
 
 		try
 		{
-			_outputStream = new FileOutputStream(DbParameters.getCSV(), false) ;
+			_outputStream = new FileOutputStream(sCsvFullFileName, false) ;
 		} 
 		catch (FileNotFoundException e1)
 		{
-			Logger.trace(sFunctionName + " Cannot create file  \"" + DbParameters.getCSV() + "\". FileNotFoundException " + e1.getMessage(), iUserId, Logger.TraceLevel.ERROR) ;
+			Logger.trace(sFunctionName + " Cannot create file  \"" + sCsvFullFileName + "\". FileNotFoundException " + e1.getMessage(), iUserId, Logger.TraceLevel.ERROR) ;
 			// e1.printStackTrace();
-			return "Cannot create file " + DbParameters.getCSV() ;
+			return "Cannot create file " + sCsvFullFileName ;
 		}
 
 		if ("1".equals(csvStructure.getHeaderLine()))
@@ -89,8 +95,6 @@ public class CoachingFitBuildCsvEngine
 		}
 
 		Logger.trace(sFunctionName + " " + aForms.size() + " forms are present in the database.", iUserId, Logger.TraceLevel.SUBDETAIL) ;
-
-
 
 		// Prepare selection based on root
 		//

@@ -31,8 +31,8 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
 	
 	@Inject
 	public CoachingFitBuildCsvHandler(final DbParameters                 dbParameters,
-                                    final Provider<ServletContext>     servletContext,
-                                    final Provider<HttpServletRequest> servletRequest)
+                                      final Provider<ServletContext>     servletContext,
+                                      final Provider<HttpServletRequest> servletRequest)
 	{
 		super(servletContext) ;
 		
@@ -48,7 +48,11 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
 		int iUserId      = action.getUserId() ;
 		int iArchetypeId = action.getEventId() ;
 		
-		String sArchetypeFileName = getArchetypeFileName(iUserId, iArchetypeId) ;
+		ArchetypeData archetype = getArchetype(iUserId, iArchetypeId) ;
+		if (null == archetype)
+		    return new GetCsvResult("", "Server error (archetype not found)") ;
+		
+		String sArchetypeFileName = archetype.getFile() ;
 		if ("".equals(sArchetypeFileName))
 			return new GetCsvResult("", "Server error (archetype not found)") ;
 		
@@ -62,10 +66,14 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
  		if (false == parseArchetype(csvStructure, iUserId))
  			return new GetCsvResult("", "Server error (cannot parse the Archetype file)") ;
  		
+ 		// Prepare the csv file name
+ 		//
+ 		String sFileName = getFileName(archetype.getLabel()) + ".csv" ;
+ 		
  		// Build the CSV file
  		//
 		CoachingFitBuildCsvEngine cvsEngine = new CoachingFitBuildCsvEngine() ;
-		String sError = cvsEngine.execute(iUserId, csvStructure) ;
+		String sError = cvsEngine.execute(iUserId, csvStructure, sFileName) ;
 		if (false == "".equals(sError))
 			return new GetCsvResult("", sError) ;
 		
@@ -112,7 +120,7 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
 		return bMailSent ;
 	}
 	
-	protected String getArchetypeFileName(final int iUserId, final int iArchetypeId)
+	protected ArchetypeData getArchetype(final int iUserId, final int iArchetypeId)
 	{
 		DBConnector dbConnector = new DBConnector(false) ;
 	
@@ -120,9 +128,9 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
 		
 		ArchetypeData archetype = new ArchetypeData() ;
 		if (false == archetypeManager.existData(iArchetypeId, archetype))
-			return "" ;
+			return null ;
 			
-		return archetype.getFile() ;
+		return archetype ;
 	}
 	
 	protected UserData getUserData(final int iUserId)
@@ -136,6 +144,35 @@ public class CoachingFitBuildCsvHandler extends BuildCsvHandlerBase implements A
 			return null ;
 			
 		return user ;
+	}
+	
+	/**
+	 * Get a file name by replacing all white spaces with underscores
+	 */
+	public static String getFileName(final String sArchetypeLabel)
+	{
+	    if ((null == sArchetypeLabel) || sArchetypeLabel.isEmpty())
+	        return "" ;
+	    
+	    String sAtWork = sArchetypeLabel.trim() ;
+	    
+	    int iLabelLength = sAtWork.length() ;
+	    
+	    String sResult = "" ;
+	    for (int i = 0 ; i < iLabelLength ; i++)
+	    {
+	        char c = sAtWork.charAt(i) ;
+	        if (' ' != c)
+	            sResult += c ;
+	        else
+	        {
+	            sResult += "_" ;
+	            while ((i < iLabelLength - 1) && (sAtWork.charAt(i + 1) == ' '))
+	                i++ ;
+	        }
+	    }
+	    
+	    return sResult ;
 	}
 	
 	@Override
